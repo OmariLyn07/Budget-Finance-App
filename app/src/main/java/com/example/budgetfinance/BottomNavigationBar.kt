@@ -48,10 +48,10 @@ fun ButtomNavigationBar() {
                         Icon(
                             imageVector = item.icon,
                             contentDescription = item.title,
-                            tint = MaterialTheme.colorScheme.background
+                            tint = MaterialTheme.colorScheme.onBackground
                         ) },
                     label = {
-                        Text(text = item.title, color = MaterialTheme.colorScheme.background)
+                        Text(text = item.title, color = MaterialTheme.colorScheme.onBackground)
                     }
                 )
             }
