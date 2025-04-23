@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.sp
 @Preview
 @Composable
 fun WalletSection() {
+    var wallet = 0.00
+
     Row(
         modifier = Modifier.fillMaxWidth().padding(16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -41,25 +43,12 @@ fun WalletSection() {
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "$ 44.47",
+                text = "$$wallet",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
             )
         }
 
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(15.dp))
-                .background(MaterialTheme.colorScheme.secondaryContainer)
-                .clickable {  }
-                .padding(6.dp),
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.Search,
-                contentDescription = "Search",
-                tint = MaterialTheme.colorScheme.onSecondaryContainer,
-            )
-        }
     }
 }
