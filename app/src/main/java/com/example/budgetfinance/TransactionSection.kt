@@ -64,7 +64,7 @@ fun TransactionScreen(navController: NavController, transactionViewModel: Transa
                 .padding(padding)
         ) {
             TransactionSection(navController, transactionViewModel)
-            CurrencySection()
+
         }
     }
 }

@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.budgetfinance.data.BillViewModel
+import com.example.budgetfinance.data.TransactionViewModel
 import com.example.budgetfinance.data.WalletViewModel
 
 @Preview
@@ -31,12 +32,13 @@ fun callHome(){
     val nav: NavController = rememberNavController()
     val billingViewModel: BillViewModel = BillViewModel()
     val walletViewModel: WalletViewModel = WalletViewModel()
-    HomeScreen(nav, walletViewModel, billingViewModel)
+    val transactionViewModel: TransactionViewModel = TransactionViewModel()
+    HomeScreen(nav, walletViewModel, billingViewModel, transactionViewModel)
 }
 
 
 @Composable
-fun HomeScreen(navController: NavController, walletViewModel: WalletViewModel, billingViewModel: BillViewModel) {
+fun HomeScreen(navController: NavController, walletViewModel: WalletViewModel, billingViewModel: BillViewModel, transactionViewModel: TransactionViewModel) {
     Scaffold(bottomBar = { BottomNavigationBar(navController) }){ padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)){
             WalletSection(walletViewModel)
@@ -48,7 +50,7 @@ fun HomeScreen(navController: NavController, walletViewModel: WalletViewModel, b
             ) {
                 BillingSection(billingViewModel)
             }
-            CurrencySection()
+            CurrencySection(walletViewModel, transactionViewModel)
             Spacer(modifier = Modifier.height(16.dp))
         }
     }

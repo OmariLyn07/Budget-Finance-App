@@ -49,7 +49,7 @@ class MainActivity : ComponentActivity() {
                         startDestination = NavScreen.navHome,
                         builder = {
                             composable(NavScreen.navHome){
-                                HomeScreen(navController, walletViewModel, billingViewModel)
+                                HomeScreen(navController, walletViewModel, billingViewModel, transactionViewModel)
                             }
                             composable(NavScreen.navFinance) {
                                 TransactionScreen(

@@ -57,7 +57,7 @@ import java.time.LocalDate
 
 
 @Composable
-fun CurrencySection(viewModel: TransactionViewModel = viewModel()) {
+fun CurrencySection(walletModel: WalletViewModel = viewModel(), viewModel: TransactionViewModel = viewModel()) {
     val transactionList = viewModel.transactionList
     println("Transaction List: $transactionList")
     val totalAmount by remember(transactionList) {
@@ -69,6 +69,10 @@ fun CurrencySection(viewModel: TransactionViewModel = viewModel()) {
     var isVisible by remember { mutableStateOf(false) }
     var iconState by remember { mutableStateOf(Icons.Rounded.KeyboardArrowUp) }
     val items = remember { mutableStateListOf<Pair<LocalDate, Double>>() }
+
+    val walletBalance by remember(walletModel) {
+        derivedStateOf { walletModel.walletBalance }
+    }
 
     latestDate?.let { date ->
         if (items.none { it.first == date }) {
@@ -175,7 +179,8 @@ fun CurrencySection(viewModel: TransactionViewModel = viewModel()) {
                                     width = width,
                                     date = transaction.date,
                                     amount = transaction.amount,
-                                    list = transactionList)
+                                    list = transactionList,
+                                    wallet = walletBalance)
                             }
                         }
                     }
@@ -186,9 +191,8 @@ fun CurrencySection(viewModel: TransactionViewModel = viewModel()) {
 }
 
 @Composable
-fun CurrencyItem(index: Int, width: Dp, date: LocalDate, amount: Double, list: List<Transactions>, walletViewModel: WalletViewModel = viewModel()) {
+fun CurrencyItem(index: Int, width: Dp, date: LocalDate, amount: Double, list: List<Transactions>, wallet: Float) {
     val currency = list[index]
-    val walletBalance = walletViewModel.walletBalance
 
     Row(
         modifier = Modifier
@@ -232,7 +236,7 @@ fun CurrencyItem(index: Int, width: Dp, date: LocalDate, amount: Double, list: L
 
         Text(
             modifier = Modifier.width(width).padding(2.dp),
-            text = "$ ${walletBalance - currency.amount}",
+            text = "$ ${"%.2f".format(wallet - currency.amount)}",
             fontWeight = FontWeight.Bold,
             fontSize = 16.sp,
             color = MaterialTheme.colorScheme.onBackground,
