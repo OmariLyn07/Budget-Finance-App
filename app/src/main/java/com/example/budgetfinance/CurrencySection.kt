@@ -3,6 +3,7 @@ package com.example.budgetfinance
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -27,7 +29,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -41,20 +45,36 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.component1
+import androidx.core.graphics.component2
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.budgetfinance.data.Currency
+import com.example.budgetfinance.data.TransactionViewModel
+import com.example.budgetfinance.data.Transactions
+import com.example.budgetfinance.data.WalletViewModel
 import com.example.budgetfinance.ui.theme.GreenStart
+import java.time.LocalDate
 
-val currencies = listOf(
-    Currency(name = "USD", buy = 56.00f, sell = 1.25f, icon = Icons.Rounded.AttachMoney),
-    Currency(name = "EUR", buy = 78.00f, sell = 1.25f, icon = Icons.Rounded.Euro),
-    Currency(name = "YEN", buy = 20.00f, sell = 1.25f, icon = Icons.Rounded.CurrencyYen),
-)
 
-@Preview
 @Composable
-fun CurrencySection() {
+fun CurrencySection(viewModel: TransactionViewModel = viewModel()) {
+    val transactionList = viewModel.transactionList
+    println("Transaction List: $transactionList")
+    val totalAmount by remember(transactionList) {
+        derivedStateOf { transactionList.sumOf { it.amount } }
+    }
+    val latestDate by remember(transactionList) {
+        derivedStateOf { transactionList.maxByOrNull { it.date }?.date }
+    }
     var isVisible by remember { mutableStateOf(false) }
     var iconState by remember { mutableStateOf(Icons.Rounded.KeyboardArrowUp) }
+    val items = remember { mutableStateListOf<Pair<LocalDate, Double>>() }
+
+    latestDate?.let { date ->
+        if (items.none { it.first == date }) {
+            items.add(date to totalAmount)
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize().padding(top = 32.dp), contentAlignment = Alignment.BottomCenter) {
 
@@ -87,13 +107,13 @@ fun CurrencySection() {
                     Icon(
                         modifier = Modifier.size(25.dp),
                         imageVector = iconState,
-                        contentDescription = "Currencies",
+                        contentDescription = "Earnings",
                         tint = MaterialTheme.colorScheme.onSecondary
                     )
                 }
                 Spacer(modifier = Modifier.width(20.dp))
                 Text(
-                    text = "Currencies",
+                    text = "Earnings",
                     fontSize = 20.sp,
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                     fontWeight = FontWeight.Bold
@@ -124,14 +144,14 @@ fun CurrencySection() {
                         ) {
                             Text(
                                 modifier = Modifier.width(width),
-                                text = "Currency",
+                                text = "Date",
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 16.sp,
                                 color = MaterialTheme.colorScheme.onBackground,
                             )
                             Text(
                                 modifier = Modifier.width(width),
-                                text = "Buy",
+                                text = "Spent",
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 16.sp,
                                 color = MaterialTheme.colorScheme.onBackground,
@@ -139,7 +159,7 @@ fun CurrencySection() {
                             )
                             Text(
                                 modifier = Modifier.width(width),
-                                text = "Sell",
+                                text = "Savings",
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 16.sp,
                                 color = MaterialTheme.colorScheme.onBackground,
@@ -149,8 +169,13 @@ fun CurrencySection() {
 
                         Spacer(modifier = Modifier.padding(5.dp))
                         LazyColumn {
-                            items(currencies.size) { index ->
-                                CurrencyItem(index = index, width = width)
+                            items(transactionList) { transaction ->
+                                CurrencyItem(
+                                    index = transactionList.indexOf(transaction),
+                                    width = width,
+                                    date = transaction.date,
+                                    amount = transaction.amount,
+                                    list = transactionList)
                             }
                         }
                     }
@@ -161,8 +186,9 @@ fun CurrencySection() {
 }
 
 @Composable
-fun CurrencyItem(index: Int, width: Dp){
-    val currency = currencies[index]
+fun CurrencyItem(index: Int, width: Dp, date: LocalDate, amount: Double, list: List<Transactions>, walletViewModel: WalletViewModel = viewModel()) {
+    val currency = list[index]
+    val walletBalance = walletViewModel.walletBalance
 
     Row(
         modifier = Modifier
@@ -179,15 +205,15 @@ fun CurrencyItem(index: Int, width: Dp){
             ) {
                 Icon(
                     modifier = Modifier.size(18.dp),
-                    imageVector = currency.icon,
-                    contentDescription = currency.name,
+                    imageVector = Icons.Rounded.AttachMoney,
+                    contentDescription = currency.date.toString(),
                     tint = Color.White
                 )
             }
 
             Text(
                 modifier = Modifier.width(width).padding(2.dp),
-                text = currency.name,
+                text = currency.date.toString(),
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
                 color = MaterialTheme.colorScheme.onBackground,
@@ -197,7 +223,7 @@ fun CurrencyItem(index: Int, width: Dp){
 
         Text(
             modifier = Modifier.width(width).padding(2.dp),
-            text = "$ ${currency.buy}",
+            text = "$ ${currency.amount}",
             fontWeight = FontWeight.Bold,
             fontSize = 16.sp,
             color = MaterialTheme.colorScheme.onBackground,
@@ -206,7 +232,7 @@ fun CurrencyItem(index: Int, width: Dp){
 
         Text(
             modifier = Modifier.width(width).padding(2.dp),
-            text = "$ ${currency.sell}",
+            text = "$ ${walletBalance - currency.amount}",
             fontWeight = FontWeight.Bold,
             fontSize = 16.sp,
             color = MaterialTheme.colorScheme.onBackground,

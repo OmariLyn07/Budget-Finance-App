@@ -17,8 +17,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.budgetfinance.data.BillViewModel
+import com.example.budgetfinance.data.NavScreen
+import com.example.budgetfinance.data.TransactionViewModel
+import com.example.budgetfinance.data.WalletViewModel
 import com.example.budgetfinance.ui.theme.BudgetFinanceTheme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
@@ -28,13 +34,31 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             BudgetFinanceTheme {
-
+                val billingViewModel: BillViewModel = viewModel()
+                val transactionViewModel: TransactionViewModel = viewModel()
+                val walletViewModel: WalletViewModel = viewModel()
                 SetBarColor(color = MaterialTheme.colorScheme.background)
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ){
-                    HomeScreen()
+                    val navController = rememberNavController()
+                    NavHost(
+                        navController = navController,
+                        modifier = Modifier,
+                        startDestination = NavScreen.navHome,
+                        builder = {
+                            composable(NavScreen.navHome){
+                                HomeScreen(navController, walletViewModel, billingViewModel)
+                            }
+                            composable(NavScreen.navFinance) {
+                                TransactionScreen(
+                                    navController,
+                                    transactionViewModel = transactionViewModel
+                                )
+                            }
+                        }
+                    )
                 }
             }
         }
@@ -49,20 +73,3 @@ private fun SetBarColor(color: Color) {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun HomeScreen() {
-    Scaffold(bottomBar = { BottomNavigationBar() }){ padding ->
-
-        Column(
-            modifier = Modifier.fillMaxSize().padding(padding)
-        ){
-            WalletSection()
-            CardsSection()
-            Spacer(modifier = Modifier.height(16.dp))
-            FinanceSection()
-            CurrencySection()
-        }
-
-    }
-}
